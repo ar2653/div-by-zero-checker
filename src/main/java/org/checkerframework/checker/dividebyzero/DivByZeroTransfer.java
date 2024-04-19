@@ -72,7 +72,18 @@ public class DivByZeroTransfer extends CFTransfer {
             AnnotationMirror lhs,
             AnnotationMirror rhs) {
         // TODO
-        return lhs;
+        if (equal(rhs, reflect(Zero.class)) && operator == Comparison.NE) {
+            return reflect(NonZero.class);
+        } else if (equal(rhs, reflect(NonZero.class)) && operator == Comparison.NE) {
+            return reflect(Zero.class);
+        } else if (equal(rhs, reflect(Zero.class)) && operator == Comparison.EQ) { 
+            return reflect(Zero.class); 
+        } else if (equal(rhs, reflect(NonZero.class)) && operator == Comparison.EQ) { 
+            return reflect(NonZero.class);
+        } else {
+            return lhs;
+        }
+        // return lhs;
     }
 
     /**
@@ -94,7 +105,46 @@ public class DivByZeroTransfer extends CFTransfer {
             AnnotationMirror lhs,
             AnnotationMirror rhs) {
         // TODO
-        return top();
+        switch (operator) {
+            case PLUS:
+            case MINUS:
+                if (equal(lhs, reflect(Bottom.class)) || equal(rhs, reflect(Bottom.class))) {
+                    return reflect(Bottom.class);
+                } else if (equal(lhs, reflect(Zero.class)) && equal(rhs, reflect(Zero.class))) {
+                    return reflect(Zero.class);
+                } else if (equal(lhs, reflect(Zero.class)) && equal(rhs, reflect(NonZero.class))) {
+                    return reflect(NonZero.class);
+                } else if (equal(lhs, reflect(NonZero.class)) && equal(rhs, reflect(Zero.class))) {
+                    return reflect(NonZero.class);
+                } else {
+                    return top();
+                }
+            case TIMES:
+                if (equal(lhs, reflect(Bottom.class)) || equal(rhs, reflect(Bottom.class))) {
+                    return reflect(Bottom.class);
+                } else if (equal(lhs, reflect(Zero.class)) || equal(rhs, reflect(Zero.class))) {
+                    return reflect(Zero.class);
+                } else if (equal(lhs, reflect(NonZero.class)) && equal(rhs, reflect(NonZero.class))) {
+                    return reflect(NonZero.class);
+                } else {
+                    return top();
+                }
+            case DIVIDE:
+                if (equal(lhs, reflect(Bottom.class)) || equal(rhs, reflect(Bottom.class))
+                        || equal(rhs, reflect(Zero.class))) {
+                    return reflect(Bottom.class);
+                } else if (equal(lhs, reflect(Zero.class)) && equal(rhs, reflect(NonZero.class))) {
+                    return reflect(Zero.class);
+                } else if (equal(lhs, reflect(NonZero.class)) && equal(rhs, reflect(NonZero.class))) {
+                    return reflect(NonZero.class);
+                } else {
+                    return top();
+                }
+
+            default:
+                return top();
+        }
+        // return top();
     }
 
     // ========================================================================
